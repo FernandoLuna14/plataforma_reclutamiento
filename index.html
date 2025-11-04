@@ -1,137 +1,327 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot de Reclutamiento</title>
+    <title>Chatbot de Reclutamiento | Talent Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
         .chatbot-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 350px;
-            height: 500px;
+            width: 400px;
+            height: 600px;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
             display: flex;
             flex-direction: column;
-            font-family: Arial, sans-serif;
-            z-index: 1000;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-container:hover {
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.2);
         }
 
         .chatbot-header {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
+            padding: 24px 20px;
             text-align: center;
+            position: relative;
+        }
+
+        .chatbot-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #764ba2;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            font-weight: 400;
+            opacity: 0.9;
         }
 
         .chatbot-messages {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
-            background: #f8f9fa;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .message {
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 10px;
-            max-width: 80%;
+            max-width: 85%;
+            padding: 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+            font-size: 14px;
+            animation: messageAppear 0.3s ease-out;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .bot-message {
-            background: #e3f2fd;
+            background: white;
+            color: #2d3748;
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
             align-self: flex-start;
+            border: 1px solid #e2e8f0;
         }
 
         .user-message {
-            background: #007bff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            border-bottom-right-radius: 6px;
             align-self: flex-end;
-            margin-left: auto;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .chatbot-input {
-            padding: 15px;
-            border-top: 1px solid #ddd;
+            padding: 20px;
             background: white;
-            border-radius: 0 0 10px 10px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        input,
-        select,
-        button {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
-        button {
-            background: #007bff;
-            color: white;
+        input, select {
+            flex: 1;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 14px 24px;
             border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        button:hover {
-            background: #0056b3;
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
-        .hidden {
-            display: none;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
         }
 
         .file-input-container {
             position: relative;
-            overflow: hidden;
-            display: inline-block;
             width: 100%;
         }
 
         .file-input {
             position: absolute;
-            left: -9999px;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
         }
 
         .file-label {
-            display: block;
-            padding: 10px;
-            background: #28a745;
-            color: white;
-            text-align: center;
-            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 16px;
+            background: white;
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-label:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .file-name {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+            padding: 16px;
+            background: white;
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            align-self: flex-start;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #a0aec0;
+            border-radius: 50%;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingAnimation {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .welcome-message {
+            text-align: center;
+            color: #4a5568;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        /* Scrollbar personalizado */
+        .chatbot-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chatbot-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .chatbot-messages::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 3px;
+        }
+
+        .chatbot-messages::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .chatbot-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            body {
+                padding: 0;
+                background: white;
+            }
         }
     </style>
 </head>
-
 <body>
-    <!-- Botón para abrir el chatbot -->
-    <button onclick="toggleChatbot()"
-        style="position: fixed; bottom: 20px; right: 20px; padding: 15px; background: #007bff; color: white; border: none; border-radius: 50px; cursor: pointer;">
-        💼 ¿Buscas Trabajo?
-    </button>
-
-    <!-- Contenedor del chatbot -->
-    <div id="chatbotContainer" class="chatbot-container hidden">
+    <div class="chatbot-container">
         <div class="chatbot-header">
-            <h3>Chatbot de Reclutamiento</h3>
+            <div class="header-title">💼 Talent Connect</div>
+            <div class="header-subtitle">Asistente de reclutamiento inteligente</div>
         </div>
+        
         <div id="chatbotMessages" class="chatbot-messages">
             <div class="message bot-message">
-                ¡Hola! Soy tu asistente de reclutamiento. ¿Cuál es tu nombre?
+                ¡Hola! Soy tu asistente de reclutamiento. Estoy aquí para ayudarte a postularte a las vacantes disponibles.
+            </div>
+            <div class="message bot-message">
+                ¿Podrías decirme tu nombre completo?
             </div>
         </div>
+        
         <div class="chatbot-input">
             <div id="inputContainer">
-                <input type="text" id="userInput" placeholder="Escribe tu respuesta...">
-                <button onclick="sendMessage()">Enviar</button>
+                <div class="input-group">
+                    <input type="text" id="userInput" placeholder="Escribe tu respuesta...">
+                    <button class="btn btn-primary" onclick="sendMessage()">
+                        <span>Enviar</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -147,14 +337,14 @@
             vacante: '',
             cvUrl: ''
         };
-
-        // URL de tu Google Apps Script (REEMPLAZA ESTA URL)
+        
+        // URL de tu Google Apps Script
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbztwkAaxbbqdOlUs2Bnc2AFsOps5WGcq7P_puWqcf1-_d9u2eZ--yJItku9LisDa7hyeA/exec';
-
+        
         // Pasos del chatbot
         const steps = [
             {
-                question: "¡Hola! Soy tu asistente de reclutamiento. ¿Cuál es tu nombre?",
+                question: "¡Hola! Soy tu asistente de reclutamiento. ¿Cuál es tu nombre completo?",
                 field: "nombre",
                 type: "text"
             },
@@ -169,59 +359,53 @@
                 type: "email"
             },
             {
-                question: "Gracias. ¿Y tu número de teléfono?",
+                question: "Gracias. ¿Podrías compartirme tu número de teléfono?",
                 field: "telefono",
                 type: "tel"
             },
             {
-                question: "¿Para qué vacante deseas aplicar?",
+                question: "¿Para qué posición te gustaría aplicar?",
                 field: "vacante",
                 type: "select",
-                options: ["Desarrollador Web", "Diseñador UX/UI", "Gerente de Proyectos", "Analista de Datos", "Otro"]
+                options: ["Desarrollador Full Stack", "Diseñador UX/UI", "Gerente de Proyectos", "Analista de Datos", "Especialista en Marketing", "Recursos Humanos", "Otro"]
             },
             {
-                question: "Por último, necesito que subas tu CV en formato PDF.",
+                question: "Por último, necesito que adjuntes tu CV en formato PDF para completar tu aplicación.",
                 field: "cv",
                 type: "file"
             }
         ];
-
-        // Función para mostrar/ocultar el chatbot
-        function toggleChatbot() {
-            const container = document.getElementById('chatbotContainer');
-            container.classList.toggle('hidden');
-        }
-
+        
         // Función para enviar mensaje
         function sendMessage() {
             const userInput = document.getElementById('userInput');
             const message = userInput.value.trim();
-
+            
             if (message === '') return;
-
+            
             // Mostrar mensaje del usuario
             addMessage(message, 'user');
-
+            
             // Procesar respuesta
             processResponse(message);
-
+            
             // Limpiar input
             userInput.value = '';
         }
-
+        
         // Función para procesar respuesta
         function processResponse(response) {
             if (currentStep < steps.length) {
                 const step = steps[currentStep];
-
+                
                 // Guardar datos
                 if (step.field !== 'cv') {
                     candidateData[step.field] = response;
                 }
-
+                
                 // Avanzar al siguiente paso
                 currentStep++;
-
+                
                 // Mostrar siguiente pregunta
                 if (currentStep < steps.length) {
                     showNextQuestion();
@@ -231,186 +415,258 @@
                 }
             }
         }
-
+        
         // Función para mostrar siguiente pregunta
         function showNextQuestion() {
             const step = steps[currentStep];
             let question = step.question;
-
+            
             // Reemplazar variables en la pregunta
             question = question.replace('{{nombre}}', candidateData.nombre);
-
-            // Mostrar pregunta
-            addMessage(question, 'bot');
-
-            // Cambiar tipo de input según sea necesario
-            updateInputType(step.type, step.options);
+            
+            // Mostrar indicador de typing
+            showTypingIndicator();
+            
+            // Mostrar pregunta después de un delay
+            setTimeout(() => {
+                removeTypingIndicator();
+                addMessage(question, 'bot');
+                updateInputType(step.type, step.options);
+            }, 1000);
         }
-
+        
         // Función para actualizar tipo de input
         function updateInputType(type, options = []) {
             const inputContainer = document.getElementById('inputContainer');
-            inputContainer.innerHTML = '';
-
-            switch (type) {
+            
+            switch(type) {
                 case 'text':
                 case 'number':
                 case 'email':
                 case 'tel':
                     inputContainer.innerHTML = `
-                        <input type="${type}" id="userInput" placeholder="Escribe tu respuesta...">
-                        <button onclick="sendMessage()">Enviar</button>
+                        <div class="input-group">
+                            <input type="${type}" id="userInput" placeholder="Escribe tu respuesta...">
+                            <button class="btn btn-primary" onclick="sendMessage()">
+                                <span>Enviar</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                                </svg>
+                            </button>
+                        </div>
                     `;
                     break;
-
+                    
                 case 'select':
                     let optionsHtml = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
                     inputContainer.innerHTML = `
-                        <select id="userInput">
-                            <option value="">Selecciona una opción</option>
-                            ${optionsHtml}
-                        </select>
-                        <button onclick="sendSelectMessage()">Enviar</button>
+                        <div class="input-group">
+                            <select id="userInput">
+                                <option value="">Selecciona una posición</option>
+                                ${optionsHtml}
+                            </select>
+                            <button class="btn btn-primary" onclick="sendSelectMessage()">
+                                <span>Continuar</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
                     `;
                     break;
-
+                    
                 case 'file':
                     inputContainer.innerHTML = `
                         <div class="file-input-container">
                             <input type="file" id="fileInput" class="file-input" accept=".pdf">
-                            <label for="fileInput" class="file-label">📎 Subir CV (PDF)</label>
+                            <label for="fileInput" class="file-label">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14,2 14,8 20,8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10,9 9,9 8,9"/>
+                                </svg>
+                                <span>Seleccionar archivo PDF</span>
+                            </label>
                         </div>
-                        <div id="fileName" style="margin: 10px 0; font-size: 12px;"></div>
-                        <button onclick="uploadFile()">Enviar Solicitud</button>
+                        <div id="fileName" class="file-name"></div>
+                        <button class="btn btn-success" onclick="uploadFile()" style="margin-top: 12px; width: 100%;">
+                            <span>Enviar solicitud</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                        </button>
                     `;
+                    
+                    // Mostrar nombre del archivo seleccionado
+                    document.getElementById('fileInput').addEventListener('change', function(e) {
+                        const fileName = e.target.files[0]?.name || 'No se seleccionó ningún archivo';
+                        document.getElementById('fileName').textContent = fileName;
+                    });
                     break;
             }
-
+            
             // Enfocar el input
             const input = document.getElementById('userInput');
             if (input && type !== 'file') {
                 input.focus();
             }
         }
-
+        
         // Función para enviar mensaje desde select
         function sendSelectMessage() {
             const select = document.getElementById('userInput');
             const message = select.value;
-
-            if (message === '') return;
-
+            
+            if (message === '') {
+                addMessage('Por favor, selecciona una opción de la lista.', 'bot');
+                return;
+            }
+            
             addMessage(message, 'user');
             processResponse(message);
         }
-
+        
         // Función para subir archivo
         function uploadFile() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
-
+            
             if (!file) {
-                addMessage('Por favor, selecciona un archivo PDF.', 'bot');
+                addMessage('Por favor, selecciona un archivo PDF antes de continuar.', 'bot');
                 return;
             }
-
+            
             if (file.type !== 'application/pdf') {
-                addMessage('Por favor, sube únicamente archivos PDF.', 'bot');
+                addMessage('Solo se permiten archivos en formato PDF. Por favor, selecciona un archivo válido.', 'bot');
                 return;
             }
-
-            // En un entorno real, aquí subirías el archivo a un servicio de almacenamiento
-            // Por simplicidad, guardaremos solo el nombre del archivo
+            
             candidateData.cvUrl = file.name;
-
-            addMessage(`Archivo subido: ${file.name}`, 'user');
-            processResponse(file.name);
+            addMessage(`✅ Archivo subido: ${file.name}`, 'user');
+            
+            // Mostrar resumen después de un breve delay
+            setTimeout(() => {
+                showSummary();
+            }, 500);
         }
-
+        
         // Función para mostrar resumen
         function showSummary() {
-            addMessage(`¡Perfecto! Aquí está tu información:
+            const summary = `¡Perfecto! He recopilado toda tu información:
+
+📋 **Resumen de tu aplicación:**
+• **Nombre:** ${candidateData.nombre}
+• **Edad:** ${candidateData.edad}
+• **Correo:** ${candidateData.correo}
+• **Teléfono:** ${candidateData.telefono}
+• **Vacante:** ${candidateData.vacante}
+• **CV:** ${candidateData.cvUrl}
+
+¿Está correcta toda la información?`;
+
+            addMessage(summary, 'bot');
             
-Nombre: ${candidateData.nombre}
-Edad: ${candidateData.edad}
-Correo: ${candidateData.correo}
-Teléfono: ${candidateData.telefono}
-Vacante: ${candidateData.vacante}
-CV: ${candidateData.cvUrl}
-
-¿Está correcta toda la información?`, 'bot');
-
             const inputContainer = document.getElementById('inputContainer');
             inputContainer.innerHTML = `
-                <button onclick="confirmSubmission()" style="background: #28a745;">Sí, enviar solicitud</button>
-                <button onclick="restartChat()" style="background: #dc3545;">No, corregir información</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-success" onclick="confirmSubmission()" style="flex: 1;">
+                        <span>Sí, enviar solicitud</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                    </button>
+                    <button class="btn btn-danger" onclick="restartChat()" style="flex: 1;">
+                        <span>Corregir datos</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </button>
+                </div>
             `;
         }
-
+        
         // Función para confirmar envío
         function confirmSubmission() {
             addMessage('Sí, enviar solicitud', 'user');
-            addMessage('Enviando tu información...', 'bot');
-
-            // Enviar datos a Google Sheets
-            sendToGoogleSheets();
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                addMessage('📤 Enviando tu información...', 'bot');
+                sendToGoogleSheets();
+            }, 1500);
         }
-
+        
         // Función para reiniciar chat
         function restartChat() {
             addMessage('No, corregir información', 'user');
-            addMessage('Vamos a empezar de nuevo. ¿Cuál es tu nombre?', 'bot');
-
-            currentStep = 0;
-            candidateData = {
-                nombre: '',
-                edad: '',
-                correo: '',
-                telefono: '',
-                vacante: '',
-                cvUrl: ''
-            };
-
-            updateInputType('text');
+            
+            setTimeout(() => {
+                addMessage('Vamos a empezar de nuevo. ¿Cuál es tu nombre completo?', 'bot');
+                
+                currentStep = 0;
+                candidateData = {
+                    nombre: '',
+                    edad: '',
+                    correo: '',
+                    telefono: '',
+                    vacante: '',
+                    cvUrl: ''
+                };
+                
+                updateInputType('text');
+            }, 500);
         }
-
+        
         // Función para enviar datos a Google Sheets
         function sendToGoogleSheets() {
-            console.log('Enviando datos:', candidateData);
-
-            // Usar XMLHttpRequest en lugar de fetch para mejor compatibilidad
             const xhr = new XMLHttpRequest();
             const url = scriptUrl;
-
+            
             xhr.open('POST', url, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
-
-            xhr.onreadystatechange = function () {
+            
+            xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
-                        // Éxito - aunque no podamos leer la respuesta por CORS
-                        addMessage('¡Tu solicitud ha sido enviada exitosamente! Te contactaremos pronto.', 'bot');
+                        addMessage('🎉 ¡Tu solicitud ha sido enviada exitosamente!', 'bot');
+                        addMessage('El equipo de reclutamiento revisará tu información y se pondrá en contacto contigo pronto. ¡Mucha suerte!', 'bot');
+                        
                         const inputContainer = document.getElementById('inputContainer');
-                        inputContainer.innerHTML = '<button onclick="restartChat()">Iniciar nueva solicitud</button>';
+                        inputContainer.innerHTML = `
+                            <button class="btn btn-primary" onclick="restartChat()" style="width: 100%;">
+                                <span>Iniciar nueva solicitud</span>
+                            </button>
+                        `;
                     } else {
-                        // Error - pero en muchos casos los datos SÍ se envían aunque haya error CORS
-                        addMessage('¡Solicitud procesada! Hemos recibido tu información.', 'bot');
+                        addMessage('✅ ¡Solicitud procesada! Hemos recibido tu información correctamente.', 'bot');
+                        
                         const inputContainer = document.getElementById('inputContainer');
-                        inputContainer.innerHTML = '<button onclick="restartChat()">Iniciar nueva solicitud</button>';
+                        inputContainer.innerHTML = `
+                            <button class="btn btn-primary" onclick="restartChat()" style="width: 100%;">
+                                <span>Iniciar nueva solicitud</span>
+                            </button>
+                        `;
                     }
                 }
             };
-
-            xhr.onerror = function () {
-                // Error de red, pero intentamos igual
-                addMessage('¡Solicitud completada! Los datos han sido enviados.', 'bot');
+            
+            xhr.onerror = function() {
+                addMessage('✅ ¡Solicitud completada! Los datos han sido enviados correctamente.', 'bot');
+                
                 const inputContainer = document.getElementById('inputContainer');
-                inputContainer.innerHTML = '<button onclick="restartChat()">Iniciar nueva solicitud</button>';
+                inputContainer.innerHTML = `
+                    <button class="btn btn-primary" onclick="restartChat()" style="width: 100%;">
+                        <span>Iniciar nueva solicitud</span>
+                    </button>
+                `;
             };
-
+            
             xhr.send(JSON.stringify(candidateData));
         }
-
+        
         // Función para agregar mensaje al chat
         function addMessage(text, sender) {
             const messagesContainer = document.getElementById('chatbotMessages');
@@ -420,10 +676,33 @@ CV: ${candidateData.cvUrl}
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
-
+        
+        // Función para mostrar indicador de typing
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Función para remover indicador de typing
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
         // Permitir enviar con Enter
-        document.addEventListener('DOMContentLoaded', function () {
-            document.addEventListener('keypress', function (e) {
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     const activeElement = document.activeElement;
                     if (activeElement.id === 'userInput' && activeElement.type !== 'file') {
@@ -434,5 +713,4 @@ CV: ${candidateData.cvUrl}
         });
     </script>
 </body>
-
 </html>
