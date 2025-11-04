@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot de Reclutamiento</title>
+    <style>
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+        }
+        
+        .chatbot-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        
+        .chatbot-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        
+        .bot-message {
+            background: #e3f2fd;
+            align-self: flex-start;
+        }
+        
+        .user-message {
+            background: #007bff;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        
+        .chatbot-input {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            background: white;
+            border-radius: 0 0 10px 10px;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-label {
+            display: block;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Botón para abrir el chatbot -->
+    <button onclick="toggleChatbot()" style="position: fixed; bottom: 20px; right: 20px; padding: 15px; background: #007bff; color: white; border: none; border-radius: 50px; cursor: pointer;">
+        💼 ¿Buscas Trabajo?
+    </button>
+
+    <!-- Contenedor del chatbot -->
+    <div id="chatbotContainer" class="chatbot-container hidden">
+        <div class="chatbot-header">
+            <h3>Chatbot de Reclutamiento</h3>
+        </div>
+        <div id="chatbotMessages" class="chatbot-messages">
+            <div class="message bot-message">
+                ¡Hola! Soy tu asistente de reclutamiento. ¿Cuál es tu nombre?
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <div id="inputContainer">
+                <input type="text" id="userInput" placeholder="Escribe tu respuesta...">
+                <button onclick="sendMessage()">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentStep = 0;
+        let candidateData = {
+            nombre: '',
+            edad: '',
+            correo: '',
+            telefono: '',
+            vacante: '',
+            cvUrl: ''
+        };
+        
+        // URL de tu Google Apps Script (REEMPLAZA ESTA URL)
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbztwkAaxbbqdOlUs2Bnc2AFsOps5WGcq7P_puWqcf1-_d9u2eZ--yJItku9LisDa7hyeA/exec';
+        
+        // Pasos del chatbot
+        const steps = [
+            {
+                question: "¡Hola! Soy tu asistente de reclutamiento. ¿Cuál es tu nombre?",
+                field: "nombre",
+                type: "text"
+            },
+            {
+                question: "Mucho gusto {{nombre}}. ¿Cuál es tu edad?",
+                field: "edad",
+                type: "number"
+            },
+            {
+                question: "Perfecto. ¿Cuál es tu correo electrónico?",
+                field: "correo",
+                type: "email"
+            },
+            {
+                question: "Gracias. ¿Y tu número de teléfono?",
+                field: "telefono",
+                type: "tel"
+            },
+            {
+                question: "¿Para qué vacante deseas aplicar?",
+                field: "vacante",
+                type: "select",
+                options: ["Desarrollador Web", "Diseñador UX/UI", "Gerente de Proyectos", "Analista de Datos", "Otro"]
+            },
+            {
+                question: "Por último, necesito que subas tu CV en formato PDF.",
+                field: "cv",
+                type: "file"
+            }
+        ];
+        
+        // Función para mostrar/ocultar el chatbot
+        function toggleChatbot() {
+            const container = document.getElementById('chatbotContainer');
+            container.classList.toggle('hidden');
+        }
+        
+        // Función para enviar mensaje
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+            
+            if (message === '') return;
+            
+            // Mostrar mensaje del usuario
+            addMessage(message, 'user');
+            
+            // Procesar respuesta
+            processResponse(message);
+            
+            // Limpiar input
+            userInput.value = '';
+        }
+        
+        // Función para procesar respuesta
+        function processResponse(response) {
+            if (currentStep < steps.length) {
+                const step = steps[currentStep];
+                
+                // Guardar datos
+                if (step.field !== 'cv') {
+                    candidateData[step.field] = response;
+                }
+                
+                // Avanzar al siguiente paso
+                currentStep++;
+                
+                // Mostrar siguiente pregunta
+                if (currentStep < steps.length) {
+                    showNextQuestion();
+                } else {
+                    // Todos los datos recopilados, mostrar resumen
+                    showSummary();
+                }
+            }
+        }
+        
+        // Función para mostrar siguiente pregunta
+        function showNextQuestion() {
+            const step = steps[currentStep];
+            let question = step.question;
+            
+            // Reemplazar variables en la pregunta
+            question = question.replace('{{nombre}}', candidateData.nombre);
+            
+            // Mostrar pregunta
+            addMessage(question, 'bot');
+            
+            // Cambiar tipo de input según sea necesario
+            updateInputType(step.type, step.options);
+        }
+        
+        // Función para actualizar tipo de input
+        function updateInputType(type, options = []) {
+            const inputContainer = document.getElementById('inputContainer');
+            inputContainer.innerHTML = '';
+            
+            switch(type) {
+                case 'text':
+                case 'number':
+                case 'email':
+                case 'tel':
+                    inputContainer.innerHTML = `
+                        <input type="${type}" id="userInput" placeholder="Escribe tu respuesta...">
+                        <button onclick="sendMessage()">Enviar</button>
+                    `;
+                    break;
+                    
+                case 'select':
+                    let optionsHtml = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                    inputContainer.innerHTML = `
+                        <select id="userInput">
+                            <option value="">Selecciona una opción</option>
+                            ${optionsHtml}
+                        </select>
+                        <button onclick="sendSelectMessage()">Enviar</button>
+                    `;
+                    break;
+                    
+                case 'file':
+                    inputContainer.innerHTML = `
+                        <div class="file-input-container">
+                            <input type="file" id="fileInput" class="file-input" accept=".pdf">
+                            <label for="fileInput" class="file-label">📎 Subir CV (PDF)</label>
+                        </div>
+                        <div id="fileName" style="margin: 10px 0; font-size: 12px;"></div>
+                        <button onclick="uploadFile()">Enviar Solicitud</button>
+                    `;
+                    break;
+            }
+            
+            // Enfocar el input
+            const input = document.getElementById('userInput');
+            if (input && type !== 'file') {
+                input.focus();
+            }
+        }
+        
+        // Función para enviar mensaje desde select
+        function sendSelectMessage() {
+            const select = document.getElementById('userInput');
+            const message = select.value;
+            
+            if (message === '') return;
+            
+            addMessage(message, 'user');
+            processResponse(message);
+        }
+        
+        // Función para subir archivo
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                addMessage('Por favor, selecciona un archivo PDF.', 'bot');
+                return;
+            }
+            
+            if (file.type !== 'application/pdf') {
+                addMessage('Por favor, sube únicamente archivos PDF.', 'bot');
+                return;
+            }
+            
+            // En un entorno real, aquí subirías el archivo a un servicio de almacenamiento
+            // Por simplicidad, guardaremos solo el nombre del archivo
+            candidateData.cvUrl = file.name;
+            
+            addMessage(`Archivo subido: ${file.name}`, 'user');
+            processResponse(file.name);
+        }
+        
+        // Función para mostrar resumen
+        function showSummary() {
+            addMessage(`¡Perfecto! Aquí está tu información:
+            
+Nombre: ${candidateData.nombre}
+Edad: ${candidateData.edad}
+Correo: ${candidateData.correo}
+Teléfono: ${candidateData.telefono}
+Vacante: ${candidateData.vacante}
+CV: ${candidateData.cvUrl}
+
+¿Está correcta toda la información?`, 'bot');
+            
+            const inputContainer = document.getElementById('inputContainer');
+            inputContainer.innerHTML = `
+                <button onclick="confirmSubmission()" style="background: #28a745;">Sí, enviar solicitud</button>
+                <button onclick="restartChat()" style="background: #dc3545;">No, corregir información</button>
+            `;
+        }
+        
+        // Función para confirmar envío
+        function confirmSubmission() {
+            addMessage('Sí, enviar solicitud', 'user');
+            addMessage('Enviando tu información...', 'bot');
+            
+            // Enviar datos a Google Sheets
+            sendToGoogleSheets();
+        }
+        
+        // Función para reiniciar chat
+        function restartChat() {
+            addMessage('No, corregir información', 'user');
+            addMessage('Vamos a empezar de nuevo. ¿Cuál es tu nombre?', 'bot');
+            
+            currentStep = 0;
+            candidateData = {
+                nombre: '',
+                edad: '',
+                correo: '',
+                telefono: '',
+                vacante: '',
+                cvUrl: ''
+            };
+            
+            updateInputType('text');
+        }
+        
+        // Función para enviar datos a Google Sheets
+        function sendToGoogleSheets() {
+            fetch(scriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(candidateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMessage('¡Tu solicitud ha sido enviada exitosamente! Te contactaremos pronto.', 'bot');
+                const inputContainer = document.getElementById('inputContainer');
+                inputContainer.innerHTML = '<button onclick="restartChat()">Iniciar nueva solicitud</button>';
+            })
+            .catch(error => {
+                addMessage('Hubo un error al enviar tu solicitud. Por favor, intenta nuevamente.', 'bot');
+                console.error('Error:', error);
+            });
+        }
+        
+        // Función para agregar mensaje al chat
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Permitir enviar con Enter
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const activeElement = document.activeElement;
+                    if (activeElement.id === 'userInput' && activeElement.type !== 'file') {
+                        sendMessage();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
