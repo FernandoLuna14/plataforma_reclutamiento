@@ -370,25 +370,35 @@ CV: ${candidateData.cvUrl}
         }
         
         // Función para enviar datos a Google Sheets
-        function sendToGoogleSheets() {
-            fetch(scriptUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(candidateData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                addMessage('¡Tu solicitud ha sido enviada exitosamente! Te contactaremos pronto.', 'bot');
-                const inputContainer = document.getElementById('inputContainer');
-                inputContainer.innerHTML = '<button onclick="restartChat()">Iniciar nueva solicitud</button>';
-            })
-            .catch(error => {
-                addMessage('Hubo un error al enviar tu solicitud. Por favor, intenta nuevamente.', 'bot');
-                console.error('Error:', error);
-            });
-        }
+function sendToGoogleSheets() {
+  // Mostrar datos que se enviarán (para debug)
+  console.log('Enviando datos:', candidateData);
+  
+  fetch(scriptUrl, {
+    method: 'POST',
+    mode: 'no-cors', // ← AÑADE ESTA LÍNEA
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(candidateData)
+  })
+  .then(response => {
+    // Con 'no-cors' no podemos leer la respuesta, pero confiamos en que se envió
+    addMessage('¡Tu solicitud ha sido enviada exitosamente! Te contactaremos pronto.', 'bot');
+    const inputContainer = document.getElementById('inputContainer');
+    inputContainer.innerHTML = '<button onclick="restartChat()">Iniciar nueva solicitud</button>';
+  })
+  .catch(error => {
+    console.error('Error completo:', error);
+    addMessage('Hubo un error al enviar tu solicitud. Por favor, intenta nuevamente.', 'bot');
+    // Mostrar opción para reintentar
+    const inputContainer = document.getElementById('inputContainer');
+    inputContainer.innerHTML = `
+      <button onclick="sendToGoogleSheets()">Reintentar envío</button>
+      <button onclick="restartChat()">Comenzar de nuevo</button>
+    `;
+  });
+}
         
         // Función para agregar mensaje al chat
         function addMessage(text, sender) {
